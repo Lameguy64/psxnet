@@ -1,0 +1,92 @@
+Comms is from serial client to PSX
+
+* 0x8a 0x00	- Ping test (part of init sequence)
+		
+	SEND:	(int) 0xdeadbeef - Response Ok.
+
+
+* 0x8a 0x01	- Get client information
+		
+	SEND:	(int) 0		- Command Result.
+			(short) x	- Info string length.
+			(char) x...	- Info string of client info.
+		
+		
+* 0x8a 0x02	- Connect by IP
+
+	SEND:	(int) 0		- Command result
+
+	READ:	(short) x	- Port value (ex. 80 for HTTP).
+			(short)	x	- Connection type (0 - TCP, 1 - UDP).
+			(short)	x	- IP address string length.
+			(char) x...	- IP address string.
+			
+	< attempt connect >
+	
+	SEND:	(short) x	- Send socket number if connect ok.
+			or
+			(short) <0	- Send a negative number if failed.
+			
+			
+* 0x8a 0x03	- Connect by domain name
+
+	SEND:	(int) 0		- Command ok.
+	
+	READ:	(short) x	- Host name length.
+			(short) x	- Connection type (0 - TCP, 1 - UDP).
+			(short) x	- Port number (ex. 80 for HTTP).
+			(char) x...	- Host name string.
+			
+	< attempt resolve and connect >
+	
+	SEND:	(int) x		- Send socket number if connect ok.
+			(char) x...	- Resolved IP address string.
+			or
+			(int) <0	- Any negative number if failed.
+			
+			
+* 0x8a 0x04	- Disconnect socket
+
+	SEND:	(int) 0		- Command ok.
+	
+	READ:	(short) x	- Socket number.
+	
+	
+* 0x8a 0x05 - Send data.
+
+	SEND:	(int) 0		- Command ok.
+	
+	READ:	(short) x	- Socket.
+			(short) x	- Data length.
+			(u int) x	- CRC32 checksum (to ensure data sent through the serial is intact).
+			(char) x... - Data.
+			
+	< perform CRC check and compare hashes >
+	
+	SEND:	(int) 0		- CRC check ok.
+			or
+			(int) 1		- CRC check mismatch, retry send
+	
+	< send data packet to socket >
+	
+	SEND:	(int) x		- Bytes sent.
+			or
+			(int) <0	- Send error.
+			
+	
+* 0x8a 0x06	- Receive data.
+
+	SEND:	(int) 0		- Command ok.
+	
+	READ:	(short) x	- Socket.
+			(short) x	- Bytes to receive
+	
+	< receive data packet from socket >
+	
+	SEND:	(int) x		- Bytes received.
+			(u int) x	- CRC32 of received data.
+			(char) x...	- Data received.
+			
+	READ:	(int) 0		- Receive ok.
+			or
+			(int) 1		- CRC mismatch, retry.
