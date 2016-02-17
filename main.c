@@ -13,8 +13,7 @@
 
 #define URL		"http://www.psxdev.net/"
 #define HOST	"www.psxdev.net"
-#define FILE	"/meowstic.bin"
-
+#define FILE	"/forum/download/file.php?id=851"
 
 char buff[65536];
 
